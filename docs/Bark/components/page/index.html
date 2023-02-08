@@ -1,0 +1,8 @@
+<template>
+    <div h-model="^" h-scaffold="this.scaffoldRoute($element, $detail)"
+     h-routing="start" h-attribute="h-route: route" h-event="*: this.syncDocumentTitle($state)">
+        <app-loadingpage h-model="^" h-routing="start"></app-loadingpage>
+        <div h-scaffold="this.scaffoldPage($element, $detail)"></div>
+        <app-errorpage></app-errorpage>
+    </div>
+</template>

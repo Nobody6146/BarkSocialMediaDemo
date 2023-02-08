@@ -1,0 +1,26 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no"/>
+        <title>{{APP_NAME}}</title>
+        <link rel="stylesheet" href="index.css">
+        <link rel="icon" type="image/x-icon" href="images/favicon.png">
+    </head>
+    <body>
+        <!-- Load our templates from the server for all of our components -->
+        <template h-template="app-templates" h-source="templates.html"></template>
+        <app-templates></app-templates>
+
+        <!-- Start displaying our content -->
+        <app-root></app-root>
+
+        <!-- Launch the application -->
+        <script type="module">
+            import { App } from "./index.js";
+
+            const app = new App();
+            app.start();
+            globalThis.app = app;
+        </script>
+    </body>
+</html>

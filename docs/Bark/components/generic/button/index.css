@@ -1,0 +1,14 @@
+:root {
+    color: var(--color-ui-text);
+    background-color: var(--color-ui-elements);
+    width: 140px;
+    padding: 10px;
+    border: none;
+    border-radius: 7px;
+    font-size: 1rem;
+    text-align: center;
+}
+
+:root[disabled] {
+    opacity: .5;
+}

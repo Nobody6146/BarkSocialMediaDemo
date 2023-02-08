@@ -1,0 +1,12 @@
+:root {
+    color: inherit;
+}
+
+:root a:visited {
+    text-decoration: none;
+}
+
+:root .activePage {
+    font-weight: bold;
+    color: blue;
+}
