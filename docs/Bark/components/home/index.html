@@ -1,9 +1,5 @@
-<template h-model="app.page.index" h-init h-routing="resolve">
+<template h-model="app.page.home" h-init h-routing="resolve">
     <div>
-        <h2 h-model="^" h-property="textContent: name">APP_NAME</h2>
-        <p>
-            Welcome to Bark! The social media for everyone!
-            <button h-model="^.signOutButton" h-component="app-button">Sign out</button>
-        </p>
+        <app-post h-model="^.posts">
     </div>
 </template>

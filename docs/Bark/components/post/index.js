@@ -1,6 +1,7 @@
 import { HydrateComponent } from "../../lib/hydrate/hydrate.js";
-export class FooterComponent extends HydrateComponent {
+export class PostComponent extends HydrateComponent {
     onInit(eventDetails) {
+        console.log("Post");
     }
     onPreRender(eventDetails) {
     }

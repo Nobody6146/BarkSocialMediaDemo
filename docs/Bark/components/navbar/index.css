@@ -1,5 +1,11 @@
 :root {
     color: inherit;
+    display: flex;
+}
+
+:root a {
+    height: 100%;
+    color: var(--color-compliment);
 }
 
 :root a:visited {
@@ -8,5 +14,5 @@
 
 :root .activePage {
     font-weight: bold;
-    color: blue;
+    color: var(--color-text);
 }

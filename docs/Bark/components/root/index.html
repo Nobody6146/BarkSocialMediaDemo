@@ -1,10 +1,12 @@
 <template h-model="app" h-init>
-    <!-- <header>
-        <nav h-model="^.navbar.items" h-component="app-navbar"></nav>
-    </header> -->
+    <app-header></app-header>
     <main>
         <app-page h-model="^.pages"></app-page>
-        <!-- <app-login></app-login> -->
     </main>
-    <app-footer></app-footer>
+    <footer>
+        <!-- <p>
+            <i>Hydrate 2023</i>
+        </p> -->
+        <app-navbar h-model="^.navbar"></app-navbar>
+    </footer>
 </template>

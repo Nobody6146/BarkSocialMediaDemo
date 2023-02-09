@@ -6,7 +6,7 @@ import { PageComponentState } from "../page/index.js";
 export interface RootComponentState {
     text:string;
     pages: PageComponentState,
-    navbar:NavbarComponentState
+    // navbar:NavbarComponentState
 }
 
 const APP_NAME:string = "Demo";
@@ -26,12 +26,9 @@ export class RootComponent extends HydrateComponent<RootComponentState> {
                 route: x.route,
                 component: x.component
             }}),
-            navbar: {
-                items: routes.map(x => { return {
-                    title: x.title,
-                    url: x.route
-                }})
-            }
+            // navbar: [
+
+            // ]
         };
     }
 

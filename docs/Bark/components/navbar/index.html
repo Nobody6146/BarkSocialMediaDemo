@@ -1,3 +1,6 @@
-<template>
-    <a h-model="^" h-routing="start" h-attribute="href: url; h-route: url" h-property="textContent: title" h-class="activePage: window.location.hash === url"></a>
+<template h-model="app.navbar" h-init style="display: flex; width: 100%;">
+    <a h-model="^" h-routing="start" h-attribute="href: url; h-route: url" h-class="activePage: window.location.hash.startsWith(url)"
+     class="center" style="padding: 5px; box-sizing: border-box; flex-direction: column; flex-grow: 1;">
+        <span class="material-symbols-outlined" h-model="^" h-property="textContent: icon"></span>
+    </a>
 </template>

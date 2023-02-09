@@ -1,7 +1,7 @@
 import { HydrateApp, HydrateAppService, HydrateAppServiceFactory } from "../../lib/hydrate/hydrate.js";
+import { UserDto } from "../../models/dtos.js";
 import { LoginRoute } from "../../routes/login/route.js";
 import { ApiService } from "../api/service.js";
-import { UserDto } from "../models/models.js";
 import { StorageService } from "../storage/service.js";
 
 export class AuthService extends HydrateAppService

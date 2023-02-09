@@ -1,14 +1,29 @@
 import { HydrateApp, HydrateAppService, HydrateAppServiceFactory } from "../../lib/hydrate/hydrate.js";
-import { LoginDto, UserDto } from "../models/models.js";
+import { UserDto } from "../../models/dtos.js";
+import { BarkLogin, BarkPost, BarkProfile } from "../../models/models.js";
+import { DataSeederService } from "../data-seeder/service.js";
 
 const AUTH_STORAGE = "auth";
-const USERS_STORAGE = "users";
+const PROFILES_STORAGE = "profiles";
 const LOGINS_STORAGE = "logins";
+const POSTS_STORAGE = "posts";
 
 export class StorageService extends HydrateAppService
 {
-    constructor() {
+    
+    constructor(hydrate:HydrateApp) {
         super();
+        this.#seedData(hydrate);
+    }
+
+    #seedData(hydrate:HydrateApp) {
+        const seedData = hydrate.dependency(DataSeederService, this).instance.seedData();
+        if(this.logins.length === 0)
+        {
+            this.logins = seedData.logins;
+            this.profiles = seedData.profiles;
+            this.posts = seedData.posts;
+        }
     }
 
     get loggedInUser():UserDto {
@@ -24,27 +39,37 @@ export class StorageService extends HydrateAppService
         localStorage.removeItem(AUTH_STORAGE);
     }
 
-    get users():UserDto[] {
-        const data = localStorage.getItem(USERS_STORAGE)
+    get profiles():BarkProfile[] {
+        const data = localStorage.getItem(PROFILES_STORAGE)
         if(!data)
             return [];
         return JSON.parse(data);
     }
-    set users(value:UserDto[]) {
-        localStorage.setItem(USERS_STORAGE, JSON.stringify(value));
+    set profiles(value:BarkProfile[]) {
+        localStorage.setItem(PROFILES_STORAGE, JSON.stringify(value));
     }
 
-    get logins():LoginDto[] {
+    get logins():BarkLogin[] {
         const data = localStorage.getItem(LOGINS_STORAGE)
         if(!data)
             return [];
         return JSON.parse(data);
     }
-    set logins(value:LoginDto[]) {
+    set logins(value:BarkLogin[]) {
         localStorage.setItem(LOGINS_STORAGE, JSON.stringify(value));
+    }
+
+    get posts():BarkPost[] {
+        const data = localStorage.getItem(POSTS_STORAGE);
+        if(!data)
+            return [];
+        return JSON.parse(data);
+    }
+    set posts(posts:BarkPost[]) {
+        localStorage.setItem(POSTS_STORAGE, JSON.stringify(posts));
     }
 }
 
 export let StorageServiceFactory:HydrateAppServiceFactory<StorageService> = function(hydrate:HydrateApp, source:any) {
-    return new StorageService();
+    return new StorageService(hydrate);
 }

@@ -19,14 +19,8 @@ export class RootComponent extends HydrateComponent {
                     component: x.component
                 };
             }),
-            navbar: {
-                items: routes.map(x => {
-                    return {
-                        title: x.title,
-                        url: x.route
-                    };
-                })
-            }
+            // navbar: [
+            // ]
         };
     }
     onPreRender(eventDetails) {

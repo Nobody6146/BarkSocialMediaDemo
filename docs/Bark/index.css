@@ -18,6 +18,7 @@ a {
     --color-foreground: #5c5a5a;
     --transitionTimer: 300ms;
     --color-ui-text: var(--color-text);
+    --color-ui-subtext: var(--color-compliment);
     --color-ui-elements: var(--color-compliment);
     --color-ui-invalid: #cd5b5b;
 }
@@ -35,9 +36,19 @@ body {
 }
 
 main {
-    margin: var(--container-padding);
-    height: calc(100% - var(--nav-height) - var(--container-padding)*2);
+    /* margin: 0 var(--container-padding); */
+    height: calc(100% - var(--nav-height) * 2 - var(--container-padding)*2);
     overflow-y: scroll;
+}
+
+header {
+    /* position: fixed; */
+    width: 100%;
+    height: var(--nav-height);
+    background-color: var(--color-background);
+    box-shadow: 0 0 0 3px rgba(9, 9, 9, 0.5);
+    display: flex;
+    overflow-x: auto;
 }
 
 footer {

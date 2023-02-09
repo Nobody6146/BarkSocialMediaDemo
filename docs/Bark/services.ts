@@ -5,6 +5,7 @@ import { AuthService, AuthServiceFactory } from "./services/auth/service.js";
 import { UuidService, UuidServiceFactory } from "./services/uuid/service.js";
 import { ApiService, ApiServiceFactory } from "./services/api/service.js";
 import { StorageService, StorageServiceFactory } from "./services/storage/service.js";
+import { DataSeederService, DataSeederServiceFactory } from "./services/data-seeder/service.js";
 export interface AppDependency<T> {
     type: HydrateAppDependencyType;
     definition: HydrateAppServiceDefinition<T>;
@@ -16,5 +17,6 @@ export let AppServices: AppDependency<any>[] = [
 	{ type: "singleton", definition: AuthService, factory: AuthServiceFactory},
 	{ type: "singleton", definition: UuidService, factory: UuidServiceFactory},
 	{ type: "singleton", definition: ApiService, factory: ApiServiceFactory},
-	{ type: "singleton", definition: StorageService, factory: StorageServiceFactory}
+	{ type: "singleton", definition: StorageService, factory: StorageServiceFactory},
+	{ type: "singleton", definition: DataSeederService, factory: DataSeederServiceFactory}
 ];
