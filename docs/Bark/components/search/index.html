@@ -1,0 +1,15 @@
+<template h-model="app.page.search" h-init h-route="#search" h-routing="resolve">
+    <div class="center" style="width: 100%; padding: 10px; justify-content: space-around;">
+        <input h-component="app-input" placeholder="Search..." style="width: 200px"
+            h-model="^.searchInput">
+        <button h-model="^.searchButton" h-component="app-button" style="width: 70px;">Search</button>
+    </div>
+    <div>
+        <span>
+            <div class="center">
+                <span h-model="^" h-property="textContent: `${posts.length} Posts`"></span>
+            </div>
+        </span>
+        <app-post h-model="^.posts"></app-post>
+    </div>
+</template>

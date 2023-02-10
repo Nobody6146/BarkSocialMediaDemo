@@ -1,5 +1,6 @@
 import { HydrateComponent, HydrateEventDetails } from "../../lib/hydrate/hydrate.js";
 import { HomeRoute } from "../../routes/home/route.js";
+import { SearchRoute } from "../../routes/search/route.js";
 
 export interface NavItemState {
     url:string,
@@ -17,7 +18,7 @@ export class NavbarComponent extends HydrateComponent<NavbarComponentState> {
     onInit(eventDetails:HydrateEventDetails):void {
         this.model = [
             {icon: "home", url: HomeRoute.path},
-            {icon: "search", url:"#search"},
+            {icon: "search", url:SearchRoute.path},
             {icon: "notifications", url: "#n"},
             {icon: "mail", url: "#m"}
         ]

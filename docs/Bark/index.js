@@ -59,7 +59,7 @@ export class App {
             for (let match of matches) {
                 //Execute the route/middleware
                 if (match.route.action)
-                    await match.route.action(request);
+                    await match.route.action(request, match);
                 //If we told the framework we've finished processing, then terminate executing the remainning routes/middleware
                 if (request.handled)
                     return;

@@ -6,9 +6,6 @@ export class DataSeederService extends HydrateAppService {
         super();
         this.#uuid = hydrate.dependency(UuidService, this).instance;
     }
-    #clone(data) {
-        return JSON.parse(JSON.stringify(data));
-    }
     seedData() {
         const logins = [
             {
@@ -62,27 +59,38 @@ export class DataSeederService extends HydrateAppService {
             "2023-09-14T12:23:00.751Z",
         ];
         const someLongText = "Yo, this is some really long text about a prompt I don't even know exists yet. There might be some day where I decide to do something different with my life but I don't think thtat today with be that day because I have no idea what I am even doing at the momment so I should probably stop...";
-        const randomLogin = function () {
-            return logins[Math.floor(Math.random() * (logins.length - 1))];
+        const randomInt = function (max) {
+            return Math.floor(Math.random() * max);
         };
-        const randomText = function () {
-            return someLongText.substring(0, Math.floor(Math.random() * someLongText.length));
-        };
-        const randomDate = function () {
-            return dates[Math.floor(Math.random() * (dates.length - 1))];
+        const randomValue = function (array) {
+            return array[randomInt(array.length)];
         };
         const posts = [];
-        for (let i = 0; i < 20; i++)
+        for (let i = 0; i < 30; i++)
             posts.push({
                 id: this.#uuid.generateUUID(),
-                date: randomDate(),
-                loginId: randomLogin().id,
-                text: randomText(),
+                date: randomValue(dates),
+                loginId: randomValue(logins).id,
+                text: someLongText.substring(0, randomInt(someLongText.length)),
             });
+        const postLikes = [];
+        for (let i = 0; i < posts.length / 2 + randomInt(posts.length / 2); i++) {
+            const like = {
+                id: this.#uuid.generateUUID(),
+                postId: randomValue(posts).id,
+                loginId: randomValue(logins).id
+            };
+            if (postLikes.find(x => x.postId === like.postId && x.loginId === like.loginId))
+                continue;
+            postLikes.push(like);
+        }
         return {
             logins,
             profiles,
-            posts
+            posts,
+            postLikes: postLikes,
+            comments: [],
+            commentLikes: []
         };
     }
 }

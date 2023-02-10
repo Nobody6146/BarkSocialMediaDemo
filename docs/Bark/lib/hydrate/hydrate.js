@@ -610,7 +610,7 @@ export class HydrateApp {
             url = window.location.href;
             state = history.state;
         }
-        else if (state == null) {
+        if (state == null) {
             state = {};
         }
         history.pushState(state, '', url);

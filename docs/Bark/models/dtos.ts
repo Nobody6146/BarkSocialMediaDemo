@@ -8,8 +8,14 @@ export interface UserDto {
 }
 
 export interface PostDto {
-    id:string;
+    postId:string;
     user:UserDto;
     date:string;
     text:string;
+    likes:PostLikeDto[];
+}
+
+export interface PostLikeDto {
+    likeId:string;
+    user:UserDto;
 }

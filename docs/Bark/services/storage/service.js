@@ -4,6 +4,7 @@ const AUTH_STORAGE = "auth";
 const PROFILES_STORAGE = "profiles";
 const LOGINS_STORAGE = "logins";
 const POSTS_STORAGE = "posts";
+const POST_LIKES_STORAGE = "postLikes";
 export class StorageService extends HydrateAppService {
     constructor(hydrate) {
         super();
@@ -15,6 +16,7 @@ export class StorageService extends HydrateAppService {
             this.logins = seedData.logins;
             this.profiles = seedData.profiles;
             this.posts = seedData.posts;
+            this.postLikes = seedData.postLikes;
         }
     }
     get loggedInUser() {
@@ -55,6 +57,15 @@ export class StorageService extends HydrateAppService {
     }
     set posts(posts) {
         localStorage.setItem(POSTS_STORAGE, JSON.stringify(posts));
+    }
+    get postLikes() {
+        const data = localStorage.getItem(POST_LIKES_STORAGE);
+        if (!data)
+            return [];
+        return JSON.parse(data);
+    }
+    set postLikes(likes) {
+        localStorage.setItem(POST_LIKES_STORAGE, JSON.stringify(likes));
     }
 }
 export let StorageServiceFactory = function (hydrate, source) {

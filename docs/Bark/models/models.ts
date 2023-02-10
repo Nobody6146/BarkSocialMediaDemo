@@ -23,16 +23,19 @@ export interface BarkPost {
 
 export interface BarkComment {
     id:string;
+    loginId:string;
+    date:string;
+    text:string;
 }
 
 export interface BarkPostLike {
     id:string;
-    userId:string;
     postId:string;
+    loginId:string;
 }
 
 export interface BarkCommentLike {
     id:string;
-    userId:string;
+    loginId:string;
     commentId:string;
 }

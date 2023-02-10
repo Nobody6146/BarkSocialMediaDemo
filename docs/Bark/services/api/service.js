@@ -1,9 +1,12 @@
 import { HydrateAppService } from "../../lib/hydrate/hydrate.js";
 import { StorageService } from "../storage/service.js";
+import { UuidService } from "../uuid/service.js";
 export class ApiService extends HydrateAppService {
+    #uuid;
     #storage;
     constructor(hydrate) {
         super();
+        this.#uuid = hydrate.dependency(UuidService, this).instance;
         this.#storage = hydrate.dependency(StorageService, this).instance;
     }
     #mapLoginToUser(login) {
@@ -62,19 +65,57 @@ export class ApiService extends HydrateAppService {
     async users() {
         return this.#storage.logins.map(x => this.#mapLoginToUser(x));
     }
-    async posts() {
-        const posts = this.#storage.posts;
+    async posts(id) {
+        const posts = this.#storage.posts.filter(x => id == null || x.id === id);
         const users = await this.users();
-        console.log(users);
+        const likes = this.#storage.postLikes;
         return posts.map(post => {
             const user = users.find(x => x.userId === post.loginId);
             return {
-                id: post.id,
+                postId: post.id,
                 date: post.date,
                 user: user,
-                text: post.text
+                text: post.text,
+                likes: likes.filter(x => x.postId === post.id).map(like => {
+                    return {
+                        likeId: like.id,
+                        user: users.find(x => x.userId === like.loginId)
+                    };
+                })
             };
         });
+    }
+    async likePost(userId, postId) {
+        const post = this.#storage.posts.find(x => x.id === postId);
+        const user = this.#storage.logins.find(x => x.id === userId);
+        if (post == null)
+            return {
+                statusCode: "400",
+                success: false,
+                error: "Post not found",
+            };
+        if (post == null)
+            return {
+                statusCode: "400",
+                success: false,
+                error: "User not found",
+            };
+        const postLikes = this.#storage.postLikes;
+        let postLike = postLikes.find(x => x.loginId === userId && x.postId === postId);
+        if (postLike == null) {
+            postLike = {
+                id: this.#uuid.generateUUID(),
+                loginId: userId,
+                postId: postId
+            };
+        }
+        const result = this.posts(postLike.id)[0];
+        return {
+            statusCode: "201",
+            success: true,
+            error: null,
+            result: result
+        };
     }
 }
 export let ApiServiceFactory = function (hydrate, source) {

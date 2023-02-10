@@ -71,7 +71,6 @@ export class SignUpComponent extends HydrateComponent<SignUpComponentState> {
     }
 
     validateForm() {
-        console.log("validate form");
         const email = this.state.emailInput.value.trim();
         const password = this.model.passwordInput.value.trim();
         const errors:string[] = [];

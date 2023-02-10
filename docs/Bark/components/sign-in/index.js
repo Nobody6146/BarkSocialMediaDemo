@@ -24,7 +24,6 @@ export class SignInComponent extends HydrateComponent {
                     const form = component.state;
                     try {
                         const result = await component.#auth.signIn(form.emailInput.value, form.passwordInput.value);
-                        console.log(result);
                         component.hydrate.route(HomeRoute.path);
                     }
                     catch (error) {
