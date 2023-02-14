@@ -297,7 +297,7 @@ export class HydrateRouteRequest {
     pathname;
     search;
     hash;
-    state;
+    #state;
     response; //Empty field where you can attach any data needed by your handling code
     #finished;
     #resolved;
@@ -311,7 +311,7 @@ export class HydrateRouteRequest {
         this.search = url.search;
         this.hash = url.hash;
         this.url = url.href;
-        this.state = state;
+        this.#state = state;
         this.response = null;
         this.#finished = finished;
         this.#resolved = false;
@@ -366,6 +366,14 @@ export class HydrateRouteRequest {
     }
     get rejected() {
         return this.#rejected;
+    }
+    get state() {
+        return window.location.href === this.url
+            ? history.state : undefined;
+    }
+    set state(value) {
+        if (window.location.href === this.url)
+            history.replaceState(value, '', this.url);
     }
     /**
      * Attempts to resolve the route. If it fails, you'll return null
@@ -618,15 +626,11 @@ export class HydrateApp {
     }
     #navigateTo(uri, state) {
         let url = new URL(uri);
-        let finished = false;
-        let isFinished = function () {
-            return finished;
-        };
-        let request = new HydrateRouteRequest(this, url, state, isFinished, this.#routingState);
+        const { request, finish } = this.#createRouteRequest(url, state);
         this.#routingState.url = request.url;
         this.#routingState.eventType = "routing.start";
         let preventedDefault = this.dispatch(this.#root, "routing.start", undefined, request);
-        finished = true;
+        finish();
         if (preventedDefault)
             return;
         if (request.resolved)
@@ -635,6 +639,18 @@ export class HydrateApp {
             return request.reject();
         if (request.redirected)
             return request.redirect();
+    }
+    #createRouteRequest(url, state) {
+        let finished = false;
+        let isFinished = function () {
+            return finished;
+        };
+        const finish = () => finished = true;
+        let request = new HydrateRouteRequest(this, url, state, isFinished, this.#routingState);
+        return {
+            request,
+            finish
+        };
     }
     #popStateListener(event) {
         this.#navigateTo(window.location.href, event.state);
@@ -1276,26 +1292,42 @@ export class HydrateApp {
             let hasRoutintAttribute = eventDetails.element.hasAttribute(this.attribute(this.#options.attribute.names.routing));
             if (hasRoutintAttribute) {
                 var routeRequest = eventDetails?.request;
-                switch (this.#elementIsHandledByRoute(eventDetails.element, eventDetails.type, routeRequest)) {
-                    case "unhandled": {
-                        let element = eventDetails.element;
-                        while (element.firstChild)
-                            element.removeChild(element.firstChild);
-                        if (element.shadowRoot) {
-                            let shadow = element.shadowRoot;
-                            while (shadow.firstChild)
-                                shadow.removeChild(shadow.firstChild);
-                        }
-                        return;
-                    }
+                const routeHandling = this.#elementIsHandledByRoute(eventDetails.element, eventDetails.type, routeRequest);
+                switch (routeHandling) {
                     case "unchanged":
                         return;
                     case "handled":
                         break;
                 }
+                if (!this.#isRoutingEvent(eventDetails.type) && !component.initialized) {
+                    if (this.#routingState?.url != null) {
+                        const { request, finish } = this.#createRouteRequest(new URL(this.#routingState.url), history.state);
+                        finish();
+                        return this.dispatch(component.element, this.#routingState.eventType, eventDetails.propPath ?? eventDetails.modelPath, request);
+                    }
+                }
+                //If we are processing a change of routing, let's totally regen the component
+                if (this.#isRoutingEvent(eventDetails.type)) {
+                    //Always do a full regen on routing changes
+                    if (component.initialized)
+                        this.#disposeComponent(component);
+                    component.data = new component.type.classDefinition({ hydrate: this, element: component.element });
+                }
+                if (routeHandling === "unhandled") {
+                    let element = eventDetails.element;
+                    while (element.firstChild)
+                        element.removeChild(element.firstChild);
+                    if (element.shadowRoot) {
+                        let shadow = element.shadowRoot;
+                        while (shadow.firstChild)
+                            shadow.removeChild(shadow.firstChild);
+                    }
+                    return;
+                }
             }
             else if (this.#isRoutingEvent(eventDetails.type))
                 return;
+            component.prevSize = dataLength;
             this.#buildComponent(component, eventDetails);
         });
         this.#options.attribute.handlers.set(this.attribute(this.#options.attribute.names.mock), (arg, eventDetails) => {
@@ -1711,17 +1743,24 @@ export class HydrateApp {
         let component = this.#components.get(element);
         if (component == null)
             return;
+        this.#disposeComponent(component);
+        this.#components.delete(element);
+    }
+    #disposeComponent(component) {
         //Call component unitializer callback if available
         if (component.initialized)
             component.data.onDestroy();
         for (let configuration of this.#dependencies.values()) {
-            const dependency = configuration.instances.get(element);
+            const dependency = configuration.instances.get(component.element);
             if (dependency != null)
                 dependency.dispose();
         }
-        this.#components.delete(element);
         if (component.mutationObserver)
             this.#mutationObserver.disconnect();
+        component.data = null;
+        component.initialized = false;
+        component.mutationObserver = null;
+        component.prevSize = undefined;
     }
     #buildComponent(component, eventDetails) {
         //Call component initializer callback if available

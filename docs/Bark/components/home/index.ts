@@ -1,4 +1,5 @@
-import { HydrateComponent, HydrateEventDetails } from "../../lib/hydrate/hydrate.js";
+import { HydrateComponent, HydrateEventDetails, HydrateRouteEventDetails } from "../../lib/hydrate/hydrate.js";
+import { HomeRouteState } from "../../routes/home/route.js";
 import { ApiService } from "../../services/api/service.js";
 import { AuthService } from "../../services/auth/service.js";
 import { ButtonComponentState } from "../generic/button/index.js";
@@ -19,8 +20,10 @@ export class HomeComponent extends HydrateComponent<HomeComponentState> {
     async onInit(eventDetails:HydrateEventDetails):Promise<void> {
         this.#auth = this.dependency(AuthService);
         this.#api = this.dependency(ApiService);
+        const routeRequest = (eventDetails as HydrateRouteEventDetails).request;
+        const state = routeRequest.state as HomeRouteState;
         this.model = {
-            posts: await this.#api.posts()//this.posts().concat(this.posts()).concat(this.posts()).concat(this.posts()).concat(this.posts()).concat(this.posts()).concat(this.posts()).concat(this.posts())//await this.#api.posts()
+            posts: state.posts
         }
         this.#auth = this.dependency(AuthService);
     }
@@ -36,22 +39,4 @@ export class HomeComponent extends HydrateComponent<HomeComponentState> {
     onDestroy():void {
 
     }
-
-    // posts():PostComponentState {
-    //     return [
-    //         {
-    //             id: "0",
-    //             date: "2021/12/01",
-    //             user: {
-    //                 userId: "0",
-    //                 emailAddress: "test@email.com",
-    //                 username: "@yourboy",
-    //                 image: "images/logo.png",
-    //                 firstName: "John",
-    //                 lastName: "Doe",
-    //             },
-    //             text: "This is the coolest link that I've seen all day. Too bad I can't share it without the government drones shooting me down. #IKnowWhoDid911"
-    //         }
-    //     ]
-    // }
 }

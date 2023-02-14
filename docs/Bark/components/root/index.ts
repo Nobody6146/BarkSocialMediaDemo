@@ -17,7 +17,7 @@ export class RootComponent extends HydrateComponent<RootComponentState> {
         const routes = AppRoutes.filter(x => x.path.match(/\w+/)).map(x => { return {
             title: x.name ?? `${x.path.substring(1, 2).toUpperCase()}${x.path.substring(2)}`,
             route: x.path,
-            component: `app-${x.path.substring(1)}`
+            component: `app-${x.path.substring(1, x.path.indexOf("/") < 0 ? x.path.length : x.path.indexOf("/"))}`
         }});
         this.model = {
             text: "Hello world",

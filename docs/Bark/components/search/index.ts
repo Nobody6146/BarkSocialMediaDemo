@@ -1,5 +1,5 @@
-import { HydrateComponent, HydrateEventDetails, HydrateModelChange, HydrateModelSubscription } from "../../lib/hydrate/hydrate.js";
-import { SearchRoute, SearchRouteModelPath, SearchRouteState } from "../../routes/search/route.js";
+import { HydrateComponent, HydrateEventDetails, HydrateModelChange, HydrateModelSubscription, HydrateRouteEventDetails } from "../../lib/hydrate/hydrate.js";
+import { SearchRoute, SearchRouteState } from "../../routes/search/route.js";
 import { ButtonComponentState } from "../generic/button/index.js";
 import { InputComponentState } from "../generic/input/index.js";
 import { PostComponentState } from "../post/index.js";
@@ -12,27 +12,22 @@ export interface SearchComponentState {
 
 export class SearchComponent extends HydrateComponent<SearchComponentState> {
 
-    #searchSubscription:HydrateModelSubscription<SearchRouteState>;
-
     onInit(eventDetails:HydrateEventDetails):void {
         const component = this;
+        const routeRequest = (eventDetails as HydrateRouteEventDetails).request;
+        const state = routeRequest.state as SearchRouteState;
         this.model = {
             searchInput: {
                 valid: true,
-                value: ""
+                value: state.query
             },
             searchButton: {
                 click: function() {
                     component.hydrate.route(`?query=${component.state.searchInput.value}${SearchRoute.path}`);
                 }.bind(this)
             },
-            posts: []
+            posts: state.posts
         }
-        this.#searchSubscription = this.hydrate.subscribe(SearchRouteModelPath, (change:HydrateModelChange<SearchRouteState>) => {
-            this.model.searchInput.value = change.state.query;
-            this.model.posts = change.state.posts
-        });
-        this.#searchSubscription.trigger();
     }
 
     onPreRender(eventDetails:HydrateEventDetails):void {
@@ -44,6 +39,6 @@ export class SearchComponent extends HydrateComponent<SearchComponentState> {
     }
 
     onDestroy():void {
-        this.#searchSubscription.unsubscribe();
+
     }
 }

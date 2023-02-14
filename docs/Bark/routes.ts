@@ -8,11 +8,13 @@ import { AuthenticatorMiddleware } from "./middleware/authenticator/middleware.j
 import { SignInRoute } from "./routes/sign-in/route.js";
 import { SignUpRoute } from "./routes/sign-up/route.js";
 import { SearchRoute } from "./routes/search/route.js";
+import { PostDetailRoute } from "./routes/post-detail/route.js";
 export const AppRoutes:HydrateRoute[] = [
     LoginRoute,
 	SignInRoute,
 	SignUpRoute,
 	AuthenticatorMiddleware,
 	HomeRoute,
-	SearchRoute
+	SearchRoute,
+	PostDetailRoute
 ].concat(NotFoundRoute);

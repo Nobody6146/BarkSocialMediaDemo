@@ -65,7 +65,7 @@ export class ApiService extends HydrateAppService {
     async users() {
         return this.#storage.logins.map(x => this.#mapLoginToUser(x));
     }
-    async posts(id) {
+    async #posts(id) {
         const posts = this.#storage.posts.filter(x => id == null || x.id === id);
         const users = await this.users();
         const likes = this.#storage.postLikes;
@@ -85,16 +85,32 @@ export class ApiService extends HydrateAppService {
             };
         });
     }
+    async posts(id) {
+        const result = await this.#posts(id);
+        if (result.length === 0)
+            return {
+                statusCode: "400",
+                success: false,
+                error: "No posts found",
+                result: null
+            };
+        return {
+            statusCode: "200",
+            success: true,
+            error: null,
+            result: result
+        };
+    }
     async likePost(userId, postId) {
         const post = this.#storage.posts.find(x => x.id === postId);
-        const user = this.#storage.logins.find(x => x.id === userId);
+        const login = this.#storage.logins.find(x => x.id === userId);
         if (post == null)
             return {
                 statusCode: "400",
                 success: false,
                 error: "Post not found",
             };
-        if (post == null)
+        if (login == null)
             return {
                 statusCode: "400",
                 success: false,
@@ -108,13 +124,46 @@ export class ApiService extends HydrateAppService {
                 loginId: userId,
                 postId: postId
             };
+            //Save like
+            postLikes.push(postLike);
+            this.#storage.postLikes = postLikes;
         }
-        const result = this.posts(postLike.id)[0];
+        const response = await this.posts(postId);
         return {
             statusCode: "201",
             success: true,
             error: null,
-            result: result
+            result: response.result[0]
+        };
+    }
+    async unlikePost(userId, postId) {
+        const post = this.#storage.posts.find(x => x.id === postId);
+        const login = this.#storage.logins.find(x => x.id === userId);
+        if (post == null)
+            return {
+                statusCode: "400",
+                success: false,
+                error: "Post not found",
+            };
+        if (login == null)
+            return {
+                statusCode: "400",
+                success: false,
+                error: "User not found",
+            };
+        const postLikes = this.#storage.postLikes;
+        let postLike = postLikes.findIndex(x => x.loginId === userId && x.postId === postId);
+        if (postLike > -1) {
+            //Delete like
+            postLikes.splice(postLike, 1);
+            this.#storage.postLikes = postLikes;
+        }
+        const response = await this.posts(postId);
+        return {
+            statusCode: "204",
+            success: true,
+            error: null,
+            result: response.result[0]
         };
     }
 }

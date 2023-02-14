@@ -7,7 +7,7 @@ export class RootComponent extends HydrateComponent {
             return {
                 title: x.name ?? `${x.path.substring(1, 2).toUpperCase()}${x.path.substring(2)}`,
                 route: x.path,
-                component: `app-${x.path.substring(1)}`
+                component: `app-${x.path.substring(1, x.path.indexOf("/") < 0 ? x.path.length : x.path.indexOf("/"))}`
             };
         });
         this.model = {

@@ -2,8 +2,6 @@ import { HydrateRoute, HydrateRouteMatch, HydrateRouteRequest } from "../../lib/
 import { PostDto } from "../../models/dtos.js";
 import { ApiService } from "../../services/api/service.js";
 
-export let SearchRouteModelPath = "postSearch";
-
 export interface SearchRouteQuery {
     query:string;
 }
@@ -20,7 +18,6 @@ export const SearchRoute:HydrateRoute = {
     name: "Search",
     path: "#search",
     action: async function(request:HydrateRouteRequest, match:HydrateRouteMatch) {
-        console.log("searching");
         const api = request.hydrate.dependency(ApiService, this).instance;
         const query = (match.query as SearchRouteQuery).query?.toLocaleLowerCase() ?? "";
         const filter = function(post:PostDto) {
@@ -33,11 +30,14 @@ export const SearchRoute:HydrateRoute = {
                 return true;
             return false;
         }
+        const postResponse = await api.posts();
+        if(!postResponse.success)
+            throw new Error(postResponse.error);
         const state:SearchRouteState = {
             query: query,
-            posts: query === "" ? [] : (await api.posts()).filter(x => filter(x))
+            posts: query === "" ? [] : postResponse.result.filter(x => filter(x))
         };
-        request.hydrate.bind(SearchRouteModelPath, state);
+        request.state = state;
         return request.resolve();
     }
 }

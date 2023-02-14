@@ -8,8 +8,10 @@ export class HomeComponent extends HydrateComponent {
     async onInit(eventDetails) {
         this.#auth = this.dependency(AuthService);
         this.#api = this.dependency(ApiService);
+        const routeRequest = eventDetails.request;
+        const state = routeRequest.state;
         this.model = {
-            posts: await this.#api.posts() //this.posts().concat(this.posts()).concat(this.posts()).concat(this.posts()).concat(this.posts()).concat(this.posts()).concat(this.posts()).concat(this.posts())//await this.#api.posts()
+            posts: state.posts
         };
         this.#auth = this.dependency(AuthService);
     }
