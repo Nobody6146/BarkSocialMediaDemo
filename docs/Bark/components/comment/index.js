@@ -7,8 +7,6 @@ export class CommentComponent extends HydrateComponent {
     onInit(eventDetails) {
         this.#auth = this.dependency(AuthService);
         this.#api = this.dependency(ApiService);
-        console.log(this.state);
-        console.log(this.likedComment(this.state[0]));
     }
     onPreRender(eventDetails) {
     }

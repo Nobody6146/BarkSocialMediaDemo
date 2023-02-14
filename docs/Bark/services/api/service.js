@@ -112,7 +112,7 @@ export class ApiService extends HydrateAppService {
                     likes: commentLikes.filter(x => x.commentId === comment.id).map(like => {
                         return {
                             likeId: like.id,
-                            user: users.find(x => x.userId === comment.loginId)
+                            user: users.find(x => x.userId === like.loginId)
                         };
                     }),
                     text: comment.text,
