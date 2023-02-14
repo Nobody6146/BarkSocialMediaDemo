@@ -23,7 +23,12 @@ export class HomeComponent extends HydrateComponent<HomeComponentState> {
         const routeRequest = (eventDetails as HydrateRouteEventDetails).request;
         const state = routeRequest.state as HomeRouteState;
         this.model = {
-            posts: state.posts
+            posts: state.posts.map(x => {
+                return {
+                    post: x,
+                    showComments: false
+                };
+            })
         }
         this.#auth = this.dependency(AuthService);
     }

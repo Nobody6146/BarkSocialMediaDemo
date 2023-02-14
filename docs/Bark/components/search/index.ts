@@ -26,7 +26,12 @@ export class SearchComponent extends HydrateComponent<SearchComponentState> {
                     component.hydrate.route(`?query=${component.state.searchInput.value}${SearchRoute.path}`);
                 }.bind(this)
             },
-            posts: state.posts
+            posts: state.posts.map(x => {
+                return {
+                    post: x,
+                    showComments: false
+                }
+            })
         }
     }
 

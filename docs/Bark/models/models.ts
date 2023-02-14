@@ -23,6 +23,7 @@ export interface BarkPost {
 
 export interface BarkComment {
     id:string;
+    postId:string;
     loginId:string;
     date:string;
     text:string;

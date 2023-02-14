@@ -13,9 +13,24 @@ export interface PostDto {
     date:string;
     text:string;
     likes:PostLikeDto[];
+    comments:CommentDto[];
 }
 
 export interface PostLikeDto {
+    likeId:string;
+    user:UserDto;
+}
+
+export interface CommentDto {
+    commentId:string;
+    post:PostDto;
+    user:UserDto;
+    date:string;
+    text:string;
+    likes:CommentLikeDto[];
+}
+
+export interface CommentLikeDto {
     likeId:string;
     user:UserDto;
 }

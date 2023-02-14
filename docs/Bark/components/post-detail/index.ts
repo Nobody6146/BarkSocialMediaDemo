@@ -1,9 +1,10 @@
 import { HydrateComponent, HydrateEventDetails, HydrateModelChange, HydrateModelSubscription, HydrateRouteEventDetails } from "../../lib/hydrate/hydrate.js";
 import { PostDto } from "../../models/dtos.js";
 import { PostDetailRouteModelPath, PostDetailRouteState } from "../../routes/post-detail/route.js";
+import { PostComponentState } from "../post/index.js";
 
 export interface PostDetailComponentState {
-    posts:PostDto[];
+    posts:PostComponentState;
 }
 
 export class PostDetailComponent extends HydrateComponent<PostDetailComponentState> {
@@ -13,7 +14,14 @@ export class PostDetailComponent extends HydrateComponent<PostDetailComponentSta
         {
             const routeRequest = (eventDetails as HydrateRouteEventDetails).request;
             const state = routeRequest.state as PostDetailRouteState;
-            this.model.posts = [state.post];
+            this.model = {
+                posts: [
+                    {
+                        post:state.post,
+                        showComments:true
+                    }
+                ]
+            }
         }
     }
 

@@ -62,34 +62,71 @@ export class ApiService extends HydrateAppService {
             result: null
         };
     }
-    async users() {
+    #users() {
         return this.#storage.logins.map(x => this.#mapLoginToUser(x));
     }
-    async #posts(id) {
+    async users() {
+        const result = await this.#users();
+        if (result.length === 0)
+            return {
+                statusCode: "404",
+                success: false,
+                error: "No users found",
+                result: null
+            };
+        return {
+            statusCode: "200",
+            success: true,
+            error: null,
+            result: result
+        };
+    }
+    #posts(id) {
         const posts = this.#storage.posts.filter(x => id == null || x.id === id);
-        const users = await this.users();
-        const likes = this.#storage.postLikes;
-        return posts.map(post => {
+        const users = this.#users();
+        const postLikes = this.#storage.postLikes;
+        const comments = this.#storage.comments;
+        const commentLikes = this.#storage.commentLikes;
+        const results = posts.map(post => {
             const user = users.find(x => x.userId === post.loginId);
             return {
                 postId: post.id,
                 date: post.date,
                 user: user,
                 text: post.text,
-                likes: likes.filter(x => x.postId === post.id).map(like => {
+                likes: postLikes.filter(x => x.postId === post.id).map(like => {
                     return {
                         likeId: like.id,
                         user: users.find(x => x.userId === like.loginId)
                     };
-                })
+                }),
+                comments: null
             };
         });
+        results.forEach(post => {
+            post.comments = comments.filter(x => x.postId === post.postId).map(comment => {
+                return {
+                    commentId: comment.id,
+                    user: users.find(x => x.userId === comment.loginId),
+                    date: comment.date,
+                    likes: commentLikes.filter(x => x.commentId === comment.id).map(like => {
+                        return {
+                            likeId: like.id,
+                            user: users.find(x => x.userId === comment.loginId)
+                        };
+                    }),
+                    text: comment.text,
+                    post: this
+                };
+            });
+        });
+        return results;
     }
     async posts(id) {
         const result = await this.#posts(id);
         if (result.length === 0)
             return {
-                statusCode: "400",
+                statusCode: "404",
                 success: false,
                 error: "No posts found",
                 result: null
@@ -106,13 +143,13 @@ export class ApiService extends HydrateAppService {
         const login = this.#storage.logins.find(x => x.id === userId);
         if (post == null)
             return {
-                statusCode: "400",
+                statusCode: "404",
                 success: false,
                 error: "Post not found",
             };
         if (login == null)
             return {
-                statusCode: "400",
+                statusCode: "404",
                 success: false,
                 error: "User not found",
             };
@@ -141,13 +178,13 @@ export class ApiService extends HydrateAppService {
         const login = this.#storage.logins.find(x => x.id === userId);
         if (post == null)
             return {
-                statusCode: "400",
+                statusCode: "404",
                 success: false,
                 error: "Post not found",
             };
         if (login == null)
             return {
-                statusCode: "400",
+                statusCode: "404",
                 success: false,
                 error: "User not found",
             };
@@ -164,6 +201,85 @@ export class ApiService extends HydrateAppService {
             success: true,
             error: null,
             result: response.result[0]
+        };
+    }
+    async likeComment(userId, commentId) {
+        const comment = this.#storage.comments.find(x => x.id === commentId);
+        if (comment == null)
+            return {
+                statusCode: "404",
+                success: false,
+                error: "Comment not found",
+            };
+        const post = this.#storage.posts.find(x => x.id === comment.postId);
+        const login = this.#storage.logins.find(x => x.id === userId);
+        if (post == null)
+            return {
+                statusCode: "404",
+                success: false,
+                error: "Post not found",
+            };
+        if (login == null)
+            return {
+                statusCode: "404",
+                success: false,
+                error: "User not found",
+            };
+        const commentLikes = this.#storage.commentLikes;
+        let commentLike = commentLikes.find(x => x.loginId === userId && x.commentId === commentId);
+        if (commentLike == null) {
+            commentLike = {
+                id: this.#uuid.generateUUID(),
+                loginId: userId,
+                commentId: commentId
+            };
+            //Save like
+            commentLikes.push(commentLike);
+            this.#storage.commentLikes = commentLikes;
+        }
+        const response = await this.posts(post.id);
+        return {
+            statusCode: "201",
+            success: true,
+            error: null,
+            result: response.result[0].comments.find(x => x.commentId === commentId)
+        };
+    }
+    async unlikeComment(userId, commentId) {
+        const comment = this.#storage.comments.find(x => x.id === commentId);
+        if (comment == null)
+            return {
+                statusCode: "404",
+                success: false,
+                error: "Comment not found",
+            };
+        const post = this.#storage.posts.find(x => x.id === comment.postId);
+        const login = this.#storage.logins.find(x => x.id === userId);
+        if (post == null)
+            return {
+                statusCode: "404",
+                success: false,
+                error: "Post not found",
+            };
+        if (login == null)
+            return {
+                statusCode: "404",
+                success: false,
+                error: "User not found",
+            };
+        const commentLikes = this.#storage.commentLikes;
+        let commentLike = commentLikes.findIndex(x => x.loginId === userId && x.commentId === commentId);
+        if (commentLike > -1) {
+            //Delete like
+            commentLikes.splice(commentLike, 1);
+            this.#storage.commentLikes = commentLikes;
+        }
+        const response = await this.posts(post.id);
+        return {
+            statusCode: "204",
+            success: true,
+            error: null,
+            result: response.result[0].comments.find(x => x.commentId === commentId)
         };
     }
 }

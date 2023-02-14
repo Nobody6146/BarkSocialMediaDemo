@@ -4,7 +4,14 @@ export class PostDetailComponent extends HydrateComponent {
         if (eventDetails.type === "routing.resolve") {
             const routeRequest = eventDetails.request;
             const state = routeRequest.state;
-            this.model.posts = [state.post];
+            this.model = {
+                posts: [
+                    {
+                        post: state.post,
+                        showComments: true
+                    }
+                ]
+            };
         }
     }
     onPreRender(eventDetails) {

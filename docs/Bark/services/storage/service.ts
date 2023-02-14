@@ -1,6 +1,6 @@
 import { HydrateApp, HydrateAppService, HydrateAppServiceFactory } from "../../lib/hydrate/hydrate.js";
 import { UserDto } from "../../models/dtos.js";
-import { BarkLogin, BarkPost, BarkPostLike, BarkProfile } from "../../models/models.js";
+import { BarkComment, BarkCommentLike, BarkLogin, BarkPost, BarkPostLike, BarkProfile } from "../../models/models.js";
 import { DataSeederService } from "../data-seeder/service.js";
 
 const AUTH_STORAGE = "auth";
@@ -8,6 +8,8 @@ const PROFILES_STORAGE = "profiles";
 const LOGINS_STORAGE = "logins";
 const POSTS_STORAGE = "posts";
 const POST_LIKES_STORAGE = "postLikes";
+const COMMENTS_STORAGE = "comments";
+const COMMENT_LIKES_STORAGE = "commentLikes";
 
 export class StorageService extends HydrateAppService
 {
@@ -25,6 +27,8 @@ export class StorageService extends HydrateAppService
             this.profiles = seedData.profiles;
             this.posts = seedData.posts;
             this.postLikes = seedData.postLikes;
+            this.comments = seedData.comments;
+            this.commentLikes = seedData.commentLikes;
         }
     }
 
@@ -79,6 +83,26 @@ export class StorageService extends HydrateAppService
     }
     set postLikes(likes:BarkPostLike[]) {
         localStorage.setItem(POST_LIKES_STORAGE, JSON.stringify(likes));
+    }
+
+    get comments():BarkComment[] {
+        const data = localStorage.getItem(COMMENTS_STORAGE);
+        if(!data)
+            return [];
+        return JSON.parse(data);
+    }
+    set comments(comments:BarkComment[]) {
+        localStorage.setItem(COMMENTS_STORAGE, JSON.stringify(comments));
+    }
+
+    get commentLikes():BarkCommentLike[] {
+        const data = localStorage.getItem(COMMENT_LIKES_STORAGE);
+        if(!data)
+            return [];
+        return JSON.parse(data);
+    }
+    set commentLikes(likes:BarkCommentLike[]) {
+        localStorage.setItem(COMMENT_LIKES_STORAGE, JSON.stringify(likes));
     }
 }
 

@@ -19,15 +19,17 @@ export class PostComponent extends HydrateComponent {
         const userId = this.#auth.user.userId;
         return post.likes.findIndex(x => x.user.userId === userId) > -1;
     }
+    hasComments(post) {
+        return post.comments.length > 0;
+    }
     async toggleLike(post) {
         const user = this.#auth.user;
         const response = this.likedPost(post)
             ? await this.#api.unlikePost(user.userId, post.postId)
             : await this.#api.likePost(user.userId, post.postId);
-        console.log(response);
         if (response.success) {
-            const index = this.state.findIndex(x => x.postId === post.postId);
-            this.model[index].likes = response.result.likes;
+            const index = this.state.findIndex(x => x.post.postId === post.postId);
+            this.model[index].post.likes = response.result.likes;
         }
         else {
             console.error(response.error);

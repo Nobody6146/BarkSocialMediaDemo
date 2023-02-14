@@ -105,13 +105,39 @@ export class DataSeederService extends HydrateAppService
             postLikes.push(like);
         }
 
+        const comments:BarkComment[] = [];
+        for(let i = 0; i < posts.length/2 + randomInt(posts.length/2); i++)
+        {
+            const comment:BarkComment = {
+                id: this.#uuid.generateUUID(),
+                postId: randomValue(posts).id,
+                loginId: randomValue(logins).id,
+                date: randomValue(dates),
+                text: someLongText.substring(0, randomInt(someLongText.length)),
+            }
+            comments.push(comment);
+        }
+
+        const commentLikes:BarkCommentLike[] = [];
+        for(let i = 0; i < comments.length/2 + randomInt(comments.length/2); i++)
+        {
+            const like:BarkCommentLike = {
+                id: this.#uuid.generateUUID(),
+                commentId: randomValue(comments).id,
+                loginId: randomValue(logins).id
+            }
+            if(commentLikes.find(x => x.commentId === like.commentId && x.loginId === like.loginId))
+                continue;
+            commentLikes.push(like);
+        }
+
         return {
             logins,
             profiles,
             posts,
             postLikes: postLikes,
-            comments: [],
-            commentLikes: []
+            comments: comments,
+            commentLikes: commentLikes
         }
     }
 }

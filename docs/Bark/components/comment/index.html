@@ -1,0 +1,26 @@
+<template h-model>
+    <div style="box-sizing: border-box; display: flex; flex-direction: column; width: 100%; gap: 20px; border-bottom: 1px solid var(--color-compliment); padding: 10px">
+        <div style="display: flex; width: 100%">
+            <div style="box-sizing: border-box; max-width: 20%; margin-right: 20px;">
+                <img h-model="^.user" h-attribute="src: image" style="width: 100%;">
+            </div>
+            <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; gap: 10px;">
+                    <span h-model="^.user" h-property="textContent: firstName">Name</span>
+                    <span h-model="^.user" h-property="textContent: username">Handle</span>
+                    <span h-model="^" h-property="textContent: date.substring(0, 10)">Date</span>
+                </div>
+                <div>
+                    <span h-model="^" h-property="textContent: text" style="color: var(--color-ui-subtext); font-size: .9rem;">Comment text...</span>
+                </div>
+            </div>
+        </div>
+        <div class="center" style="justify-content: space-around; padding: 0px 20px">
+            <span class="icon material-symbols-outlined"
+             h-model="^" h-class="icon-active: this.likedComment($state)" h-on="click: this.toggleLike($state)">
+                favorite
+            </span>
+            <span class="icon icon-inactive material-symbols-outlined">ios_share</span>
+        </div>
+    </div>
+</template>
