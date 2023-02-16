@@ -864,6 +864,10 @@ export class HydrateApp {
         this.#routingState.eventType = "routing.start";
         let preventedDefault = this.dispatch(this.#root, "routing.start", undefined, request);
         finish();
+
+        //We routed, so see if we have to lazy load any route elements
+        this.#lazyLoadRouteElements();
+
         if(preventedDefault)
             return;
 
@@ -875,13 +879,13 @@ export class HydrateApp {
             return request.redirect();
     }
 
-    #createRouteRequest(url:URL, state:any):{request:HydrateRouteRequest, finish:() => void} {
+    #createRouteRequest(url:URL, state?:any):{request:HydrateRouteRequest, finish:() => void} {
         let finished = false;
         let isFinished = function() {
             return finished;
         }
         const finish = () => finished = true;
-        let request = new HydrateRouteRequest(this, url, state, isFinished, this.#routingState);
+        let request = new HydrateRouteRequest(this, url, state ?? history.state, isFinished, this.#routingState);
         return {
             request,
             finish
@@ -1306,12 +1310,6 @@ export class HydrateApp {
                         if(mutation.target.matches(trackableSelector))
                         {
                             trackElementQueue.add(element);
-                            // let newTrack = this.#trackElement(element);
-                            // if(newTrack === false) {
-                            //     //Wasn't a new track, but a core value changed, so rebind the element
-                            //     let modelName = element.getAttribute(modelAttribute);
-                            //     this.dispatch(element, "bind", modelName, undefined);
-                            // }
                         }
                         else
                         {
@@ -1442,10 +1440,21 @@ export class HydrateApp {
             if(entry.isIntersecting)
             {
                 const element = entry.target as HTMLElement;
-                this.#intersectionObserver.unobserve(element);
-                element.removeAttribute(this.attribute(this.#options.attribute.names.lazy));
+                
+                //If this component is lazy loaded inside a routed space, don't load it unless on the route
+                if(this.#getLazyRouteElementRoute(element) != null)
+                {
+                    this.#lazyLoadRouteElement(element);
+                    return;
+                }
+                this.#loadLazyElement(element);
             }
         }
+    }
+
+    #loadLazyElement(element:HTMLElement):void {
+        this.#intersectionObserver.unobserve(element);
+        element.removeAttribute(this.attribute(this.#options.attribute.names.lazy));
     }
 
     #trackLazyElements() {
@@ -1456,6 +1465,7 @@ export class HydrateApp {
     #trackLazyElement(element:Element) {
         if(element.matches(this.#lazyLoadElementSelector))
             this.#intersectionObserver.observe(element);
+        this.#lazyLoadRouteElement(element as HTMLElement);
     }
 
     #untrackLazyElement(element:Element) {
@@ -1466,15 +1476,59 @@ export class HydrateApp {
         return `:not(template)[${this.attribute(this.#options.attribute.names.lazy)}]`;
     }
 
+    #getLazyRouteElementRoute(element:HTMLElement):string {
+        const routeAttribute = this.attribute(this.#options.attribute.names.route);
+        const lazyAttribute = this.attribute(this.#options.attribute.names.lazy);
+        if(!element.hasAttribute(lazyAttribute))
+            return null;
+        while(element != null) {
+            const route = element.getAttribute(routeAttribute);
+            if(route != null)
+                return route;
+            element = element.parentElement;
+        }
+        return null;
+    }
+
+    #lazyLoadRouteElements() {
+        const lazyAttribute = this.attribute(this.#options.attribute.names.lazy);
+        const lazyElements = this.#root.querySelectorAll<HTMLElement>(`[${lazyAttribute}]`);
+        for(let element of lazyElements) {
+            this.#lazyLoadRouteElement(element);
+        }
+    }
+
+    #lazyLoadRouteElement(element:HTMLElement):void {
+        const route = this.#getLazyRouteElementRoute(element);
+        if(route == null)
+            return;
+
+        if(this.#routingState?.url == null)
+            return;
+    
+        const {request} = this.#createRouteRequest(new URL(this.#routingState.url), history.state);
+        if(request.match(this.#routingState.url, {path: route}) == null)
+            return;
+            
+        if(!this.#isInViewport(element))
+            return;
+        this.#loadLazyElement(element);
+    }
+
+    #isInViewport(element:HTMLElement):boolean {
+        const rect = element.getBoundingClientRect();
+        return (
+            Math.floor(rect.top) >= 0 &&
+            Math.floor(rect.left) >= 0 &&
+            Math.floor(rect.bottom) <= (window.innerHeight || document.documentElement.clientHeight) &&
+            Math.floor(rect.right) <= (window.innerWidth || document.documentElement.clientWidth)
+        );
+    }
+
     #inputListener(event:InputEvent) {
         let target = event.target as HTMLElement;
         if(!target.matches(this.#trackableElementSelector))
             return;
-        // let modelName = target.getAttribute(this.attribute(this.#options.attribute.names.model));
-        // let model = this.model(modelName);
-        // let state = this.state(modelName);
-        // if(!(state instanceof Object))
-        //     return;
         this.dispatch(target, "input", null, event);
     }
 
@@ -2035,23 +2089,6 @@ export class HydrateApp {
             const componentBody:HydrateComponentConstructor = js !== null
                 ? js.default ??  Object.values(js)[0] as HydrateComponentConstructor
                 : null;
-            // if(js !== null && js.trim() !== "")s
-            // {
-            //     const script = document.createElement("script");
-            //     script.toggleAttribute(this.attribute(this.#options.attribute.names.script), true);
-            //     script.innerHTML = js;
-            //     template.content.append(script);
-            // }
-            //Load up the HTML
-
-            // element.content.append(...template.content.childNodes);
-            // //Load up the attributes
-            // for(let attribute of template.attributes)
-            //     if(!element.hasAttribute(attribute.name) && attribute.name !== lazyAttribute)
-            //         element.setAttribute(attribute.name, attribute.value);
-            // //This should guarentee a reload of the component
-            // element.removeAttribute(lazyAttribute);
-            // element.removeAttribute(this.attribute(this.#options.attribute.names.source));
             
             return {
                 template: template,
@@ -2124,39 +2161,6 @@ export class HydrateApp {
                 mutationObserver: null,
                 prevSize: undefined
             };
-
-            //Add some default behavior to the component class
-            // Object.defineProperty(component.data, '$hydrate', {
-            //     get() {
-            //         return hydrate;
-            //     }
-            // });
-            // component.data.$dependency = function<T>(definition:new (...args) => T): T {
-            //     return hydrate.dependency(definition, element).instance;
-            // };
-            // Object.defineProperty(component.data, '$root', {
-            //     get() {
-            //         return component.element;
-            //     }
-            // });
-            // Object.defineProperty(component.data, '$modelPath', {
-            //     get() {
-            //         return component.element.getAttribute(this.$hydrate.attribute(this.$hydrate.options.attribute.names.model));
-            //     }
-            // });
-            // Object.defineProperty(component.data, '$model', {
-            //     get() {
-            //         return this.$hydrate.model(this.$modelPath);
-            //     },
-            //     set(value) {
-            //         this.$hydrate.bind(this.$modelPath, value);
-            //     }
-            // });
-            // Object.defineProperty(component.data, '$state', {
-            //     get() {
-            //         return this.$hydrate.state(this.$modelPath);
-            //     }
-            // });
 
             this.#components.set(element, component);
             //remove from lazy load queue
@@ -2337,16 +2341,6 @@ export class HydrateApp {
             $state: detail.state,
             $parent: detail.parent,
             $modelName: detail.modelName,
-            // $script: function(name) {
-            //     let selector = `[${app.attribute(app.options.attribute.names.script)}=${name}]`;
-            //     let scriptElement = app.root.querySelector(selector);
-            //     if(scriptElement == null)
-            //         return null;
-            //     let func = new Function(`return ${scriptElement.textContent.trim()}`)();
-            //     if(!(func instanceof Function))
-            //         return null;
-            //     return func;
-            // },
             $id: function(query?:HTMLElement|string) {
                 if(query == null)
                     query = detail.element;
