@@ -1,6 +1,20 @@
 import { HydrateComponent } from "../../lib/hydrate/hydrate.js";
 import { ApiService } from "../../services/api/service.js";
 import { AuthService } from "../../services/auth/service.js";
+function argName(exp) {
+    return name(exp);
+}
+function propName(exp) {
+    return name(exp);
+}
+function name(exp) {
+    return exp.toString().match(/\=\>\s+[^\.]+\.(.+)/)?.[1];
+}
+export let HomeComponentTemplate = `<template h-model="app.page.home" h-init h-routing="resolve">
+    <div>
+        <app-post h-model="^.${propName(x => x.posts)}">
+    </div>
+</template>`;
 const APP_NAME = "Demo App";
 export class HomeComponent extends HydrateComponent {
     #auth;

@@ -1,4 +1,4 @@
-import { HydrateComponent, HydrateEventDetails } from "../../lib/hydrate/hydrate.js";
+import { HydrateComponent, HydrateEventDetails, HydrateFieldExpressionArgs } from "../../lib/hydrate/hydrate.js";
 import { PostDto } from "../../models/dtos.js";
 import { PostDetailRoutePathBuilder } from "../../routes/post-detail/route.js";
 import { ApiService } from "../../services/api/service.js";

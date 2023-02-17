@@ -1,10 +1,31 @@
-import { HydrateComponent, HydrateEventDetails, HydrateRouteEventDetails } from "../../lib/hydrate/hydrate.js";
+import { HydrateComponent, HydrateEventDetails, HydrateFieldExpressionArgs, HydrateRouteEventDetails } from "../../lib/hydrate/hydrate.js";
 import { HomeRouteState } from "../../routes/home/route.js";
 import { ApiService } from "../../services/api/service.js";
 import { AuthService } from "../../services/auth/service.js";
-import { ButtonComponentState } from "../generic/button/index.js";
 import { PostComponentState } from "../post/index.js";
-// import { APP_NAME } from "../../components/root/index.js"
+
+
+
+//****** Boiler Plate Code to dynamically get names of object properties *******/
+interface ComponentFieldExpressionArgs extends HydrateFieldExpressionArgs<HomeComponentState, HomeComponent> {
+    this:HomeComponent;
+}
+function argName(exp: (x:ComponentFieldExpressionArgs) => any):string {
+    return name(exp);
+}
+function propName(exp: (x:HomeComponentState) => any):string{
+    return name(exp);
+}
+function name(exp: (...any) => any):string {
+    return exp.toString().match(/\=\>\s+[^\.]+\.(.+)/)?.[1];
+}
+
+
+export let HomeComponentTemplate = `<template h-model="app.page.home" h-init h-routing="resolve">
+    <div>
+        <app-post h-model="^.${propName(x => x.posts)}">
+    </div>
+</template>`;
 
 interface HomeComponentState {
     posts:PostComponentState

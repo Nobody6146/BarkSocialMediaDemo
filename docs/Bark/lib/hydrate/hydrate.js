@@ -542,6 +542,7 @@ export class HydrateApp {
     }
     async start() {
         this.#mutationObserver = this.#observeDom(this.#root);
+        this.root.addEventListener("click", this.#clickListener.bind(this));
         this.root.addEventListener("input", this.#inputListener.bind(this));
         window.addEventListener("popstate", this.#popStateListener.bind(this));
         this.#intersectionObserver = new IntersectionObserver(this.#intersectionCallback.bind(this));
@@ -613,15 +614,21 @@ export class HydrateApp {
         });
         return observer;
     }
-    route(url, state) {
-        if (url == null) {
-            url = window.location.href;
+    route(uri, state) {
+        if (uri == null) {
+            uri = window.location.href;
             state = history.state;
+        }
+        else if (this.#options.router.hashRouting && !uri.includes("?")) {
+            //If we're routing using hashes and change routes without specifying query params, then clear them
+            const url = new URL(uri, window.location.href);
+            url.search = "";
+            uri = url.href;
         }
         if (state == null) {
             state = {};
         }
-        history.pushState(state, '', url);
+        history.pushState(state, '', uri);
         this.#navigateTo(location.href, state);
     }
     #navigateTo(uri, state) {
@@ -1201,6 +1208,20 @@ export class HydrateApp {
             Math.floor(rect.bottom) <= (window.innerHeight || document.documentElement.clientHeight) &&
             Math.floor(rect.right) <= (window.innerWidth || document.documentElement.clientWidth));
     }
+    #clickListener(event) {
+        let element = event.target;
+        while (element) {
+            if (element instanceof HTMLAnchorElement) {
+                const uri = element.getAttribute("href");
+                const url = new URL(uri, window.location.href);
+                if (url.origin !== window.location.origin)
+                    return;
+                event.preventDefault();
+                return this.route(uri);
+            }
+            element = element.parentElement;
+        }
+    }
     #inputListener(event) {
         let target = event.target;
         if (!target.matches(this.#trackableElementSelector))
@@ -1542,8 +1563,11 @@ export class HydrateApp {
         const scripts = template.content.querySelectorAll("script");
         for (let script of scripts) {
             //Look for a class definition script and load it if we find it
-            if (componentBody == null && script.matches(scriptSelector))
-                type.classDefinition = await this.#loadStringModule(script.textContent);
+            if (componentBody == null && script.matches(scriptSelector)) {
+                const { component, template } = await this.#loadStringModule(script.textContent);
+                type.classDefinition = component;
+                sourceTemplate = template ?? sourceTemplate;
+            }
             if (!script.matches(bindScriptModelSelector))
                 //Remove any script elements from the component to prevent malicious scripts unless it's an attempt to load a model
                 script.remove();
@@ -1583,9 +1607,33 @@ export class HydrateApp {
         // return module.default ??  Object.values(module)[0] as HydrateComponentConstructor;
         const blob = new Blob([script], { type: 'text/javascript' });
         const url = URL.createObjectURL(blob);
+        const result = await import(url);
+        return result;
+    }
+    async #importComponentModule(url) {
         const module = await import(url);
         URL.revokeObjectURL(url);
-        return module.default ?? Object.values(module)[0];
+        return this.#parseJsComponenModule(module);
+    }
+    #parseJsComponenModule(module) {
+        let component = null;
+        let template = null;
+        for (let prop of Object.values(module)) {
+            if (typeof prop === "string") {
+                let div = document.createElement("div");
+                div.innerHTML = prop;
+                const element = div.querySelector("template");
+                if (element != null)
+                    template = element;
+                continue;
+            }
+            if (typeof prop === "function" && prop.prototype instanceof HydrateComponent)
+                component = prop;
+        }
+        return {
+            component,
+            template
+        };
     }
     #buildCssStyle(baseStyle, componentTypeName) {
         const modelAttribute = this.attribute(this.#options.attribute.names.model);
@@ -1610,10 +1658,14 @@ export class HydrateApp {
     }
     async #loadRemoteTemplate(url) {
         const promises = [];
-        const htmlExt = url.lastIndexOf(".html");
-        const selfContained = htmlExt > -1;
-        if (selfContained)
+        const extIndex = url.lastIndexOf(".");
+        const ext = extIndex > -1 ? url.substring(extIndex + 1) : null;
+        const htmlTemplate = ext === "html";
+        const jsTemplate = ext === "js";
+        if (htmlTemplate)
             promises.push(fetch(url), Promise.resolve(null), Promise.resolve(null));
+        else if (jsTemplate)
+            promises.push(Promise.resolve(null), Promise.resolve(null), fetch(url));
         else
             promises.push(fetch(`${url}/index.html`), fetch(`${url}/index.css`), fetch(`${url}/index.js`));
         //[fetch(`${url}.html`), fetch(`${url}.css`), fetch(`${url}.js`)]
@@ -1643,23 +1695,28 @@ export class HydrateApp {
             const lazyAttribute = this.attribute(this.#options.attribute.names.lazy);
             let div = document.createElement("div");
             div.innerHTML = html;
-            let template = div.querySelector("template");
-            if (!template) {
-                template = document.createElement("template");
+            let sourceTemplate = div.querySelector("template");
+            if (!sourceTemplate) {
+                sourceTemplate = document.createElement("template");
                 //div.append(template);
             }
             if (css !== null) {
                 const style = document.createElement("style");
                 style.toggleAttribute(this.attribute(this.#options.attribute.names.style), true);
                 style.innerHTML = css;
-                template.content.append(style);
+                sourceTemplate.content.append(style);
             }
+            let componentBody = null;
             //If we imported a js module, assume the first export is the component body
-            const componentBody = js !== null
-                ? js.default ?? Object.values(js)[0]
-                : null;
+            if (js) {
+                const { component, template } = this.#parseJsComponenModule(js);
+                if (component)
+                    componentBody = component;
+                if (template)
+                    sourceTemplate = template;
+            }
             return {
-                template: template,
+                template: sourceTemplate,
                 componentBody: componentBody
             };
         });
