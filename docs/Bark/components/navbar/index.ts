@@ -7,10 +7,6 @@ export interface NavItemState {
     icon:string
 }
 
-// export interface NavbarComponentState {
-//     items:NavItemState[]
-// };
-
 export type NavbarComponentState = NavItemState[];
 
 export class NavbarComponent extends HydrateComponent<NavbarComponentState> {

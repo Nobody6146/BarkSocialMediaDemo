@@ -1,9 +1,10 @@
 import { HydrateComponent, HydrateEventDetails, HydrateScaffoldEventDetails } from "../../lib/hydrate/hydrate.js";
 
 export interface PageState {
-    title:string,
-    route:string,
-    component:string
+    title:string;
+    name:string;
+    route:string;
+    component:string;
 }
 
 export type PageComponentState = PageState[];
