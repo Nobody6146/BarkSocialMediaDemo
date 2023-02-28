@@ -28,6 +28,18 @@
         <div style="width:80%; margin-left: auto;"
          h-model="^" h-class="hidden: !showComments">
             <app-comment h-model="^.post.comments"></app-comment>
+            <div>
+                <br />
+                <div>
+                    <textarea h-component="app-input" placeholder="Please type your post..." class="post-text"
+                        h-model="^.postInput">
+                    </textarea>
+                </div>
+                <br />
+                <div class="center">
+                    <button h-model="^.submitButton" h-component="app-button">Post</button>
+                </div>
+            </div>
         </div>
     </div>
 </template>

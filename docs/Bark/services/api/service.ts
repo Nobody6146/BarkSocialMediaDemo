@@ -1,6 +1,6 @@
 import { HydrateApp, HydrateAppService, HydrateAppServiceFactory } from "../../lib/hydrate/hydrate.js";
 import { CommentDto, PostDto, UserDto } from "../../models/dtos.js";
-import { BarkLogin, BarkPost } from "../../models/models.js";
+import { BarkComment, BarkLogin, BarkPost } from "../../models/models.js";
 import { StorageService } from "../storage/service.js";
 import { UuidService } from "../uuid/service.js";
 
@@ -170,6 +170,32 @@ export class ApiService extends HydrateAppService
         }
     }
 
+    async writePost(userId:string, text:string):Promise<ApiResponse<PostDto>> {
+        const login = this.#storage.logins.find(x => x.id === userId);
+        if(login == null)
+            return {
+                statusCode: "404",
+                success: false,
+                error: "User not found",
+            };
+        const post:BarkPost =  {
+            id: this.#uuid.generateUUID(),
+            loginId: userId,
+            text: text,
+            date: new Date().toISOString()
+        };
+        const posts:BarkPost[] = this.#storage.posts;
+        posts.push(post);
+        this.#storage.posts = posts;
+        const response = await this.posts(post.id);
+        return {
+            statusCode: "201",
+            success: true,
+            error: null,
+            result: response.result[0]
+        };
+    }
+
     async likePost(userId:string, postId:string):Promise<ApiResponse<PostDto>> {
         const post = this.#storage.posts.find(x => x.id === postId);
         const login = this.#storage.logins.find(x => x.id === userId);
@@ -319,6 +345,41 @@ export class ApiService extends HydrateAppService
             success: true,
             error: null,
             result: response.result[0].comments.find(x => x.commentId === commentId)
+        };
+    }
+
+    async writeComment(userId:string, postId:string, text:string):Promise<ApiResponse<PostDto>> {
+        const login = this.#storage.logins.find(x => x.id === userId);
+        if(login == null)
+            return {
+                statusCode: "404",
+                success: false,
+                error: "User not found",
+            };
+        const posts = this.#storage.posts;
+        const post = posts.find(x => x.id === postId);
+        if(post == null)
+            return {
+                statusCode: "404",
+                success: false,
+                error: "Post not found",
+            };
+        const comment:BarkComment =  {
+            id: this.#uuid.generateUUID(),
+            loginId: userId,
+            postId: postId,
+            text: text,
+            date: new Date().toISOString()
+        };
+        const comments:BarkComment[] = this.#storage.comments;
+        comments.push(comment);
+        this.#storage.comments = comments;
+        const response = await this.posts(post.id);
+        return {
+            statusCode: "201",
+            success: true,
+            error: null,
+            result: response.result[0]
         };
     }
 }

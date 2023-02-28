@@ -3,10 +3,14 @@ import { PostDto } from "../../models/dtos.js";
 import { PostDetailRoutePathBuilder } from "../../routes/post-detail/route.js";
 import { ApiService } from "../../services/api/service.js";
 import { AuthService } from "../../services/auth/service.js";
+import { ButtonComponentState } from "../generic/button/index.js";
+import { InputComponentState } from "../generic/input/index.js";
 
 export interface PostComponentPostState {
     post:PostDto;
     showComments:boolean;
+    postInput:InputComponentState<string>;
+    submitButton:ButtonComponentState;
 }
 
 export type PostComponentState = PostComponentPostState[];

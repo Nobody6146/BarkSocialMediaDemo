@@ -37,7 +37,7 @@ body {
 
 main {
     /* margin: 0 var(--container-padding); */
-    height: calc(100% - var(--nav-height) * 2 - var(--container-padding)*2);
+    height: calc(100% - var(--nav-height) * 2);
     overflow-y: scroll;
 }
 

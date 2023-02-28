@@ -1,5 +1,6 @@
 import { HydrateComponent, HydrateEventDetails, HydrateFieldExpressionArgs, HydrateRouteEventDetails } from "../../lib/hydrate/hydrate.js";
 import { HomeRouteState } from "../../routes/home/route.js";
+import { NewPostRoute } from "../../routes/new-post/route.js";
 import { ApiService } from "../../services/api/service.js";
 import { AuthService } from "../../services/auth/service.js";
 import { PostComponentState } from "../post/index.js";
@@ -23,12 +24,32 @@ function name(exp: (...any) => any):string {
 
 export let HomeComponentTemplate = `<template h-model="app.page.home" h-init h-routing="resolve">
     <div>
-        <app-post h-model="^.${propName(x => x.posts)}">
+        <app-post h-model="^.${propName(x => x.posts)}"></app-post>
+        <a class="new-button" h-model="^" h-attribute="href: ${propName(x => x.newPostUrl)}" h-component="app-button">
+            <span class="new-button material-symbols-outlined">post_add</span>
+        </a>
     </div>
+    <style>
+        :root .new-button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+            z-index: 10;
+            position: fixed;
+            bottom: calc(var(--nav-height) + 10px);
+            right: 10px;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            font-size: 2rem;
+        }
+    </style>
 </template>`;
 
 interface HomeComponentState {
     posts:PostComponentState
+    newPostUrl:string;
 }
 
 const APP_NAME = "Demo App";
@@ -47,9 +68,17 @@ export class HomeComponent extends HydrateComponent<HomeComponentState> {
             posts: state.posts.map(x => {
                 return {
                     post: x,
-                    showComments: false
+                    showComments: false,
+                    postInput: {
+                        valid: true,
+                        value: ""
+                    },
+                    submitButton: { 
+                        valid: false
+                    }
                 };
-            })
+            }),
+            newPostUrl: NewPostRoute.path
         }
         this.#auth = this.dependency(AuthService);
     }

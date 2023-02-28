@@ -8,7 +8,7 @@ export const HomeRoute = {
         if (!repsonse.success)
             throw new Error(repsonse.error);
         const state = {
-            posts: repsonse.result
+            posts: repsonse.result.sort((x, y) => x.date > y.date ? -1 : 1)
         };
         request.state = state;
         request.resolve();

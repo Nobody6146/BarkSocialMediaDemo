@@ -6,6 +6,7 @@ import { SignInRoute } from "./routes/sign-in/route.js";
 import { SignUpRoute } from "./routes/sign-up/route.js";
 import { SearchRoute } from "./routes/search/route.js";
 import { PostDetailRoute } from "./routes/post-detail/route.js";
+import { NewPostRoute } from "./routes/new-post/route.js";
 export const AppRoutes = [
     LoginRoute,
     SignInRoute,
@@ -13,5 +14,6 @@ export const AppRoutes = [
     AuthenticatorMiddleware,
     HomeRoute,
     SearchRoute,
-    PostDetailRoute
+    PostDetailRoute,
+    NewPostRoute
 ].concat(NotFoundRoute);

@@ -7,7 +7,7 @@ export class RootComponent extends HydrateComponent {
             return {
                 title: x.name ?? `${x.path.substring(1, 2).toUpperCase()}${x.path.substring(2)}`,
                 route: x.path,
-                component: `app-${x.path.substring(1, x.path.indexOf("/") < 0 ? x.path.length : x.path.indexOf("/"))}`
+                component: `app-${x.path.substring(1).replace(/\/:(\w+)/g, "").replace(/\//g, "-")}`
             };
         });
         this.model = {
@@ -15,6 +15,7 @@ export class RootComponent extends HydrateComponent {
             pages: routes.map(x => {
                 return {
                     title: `${APP_NAME} - ${x.title}`,
+                    name: x.title,
                     route: x.route,
                     component: x.component
                 };

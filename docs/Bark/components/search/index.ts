@@ -29,7 +29,14 @@ export class SearchComponent extends HydrateComponent<SearchComponentState> {
             posts: state.posts.map(x => {
                 return {
                     post: x,
-                    showComments: false
+                    showComments: false,
+                    postInput: {
+                        valid: true,
+                        value: ""
+                    },
+                    submitButton: { 
+                        valid: false
+                    }
                 }
             })
         }
