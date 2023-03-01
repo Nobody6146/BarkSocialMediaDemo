@@ -3,8 +3,8 @@ import { HomeRoute } from "../../routes/home/route.js";
 import { ApiService } from "../../services/api/service.js";
 import { AuthService } from "../../services/auth/service.js";
 import { LoggerService } from "../../services/logger/service.js";
-import { ButtonComponentState } from "../generic/button/index.js";
-import { InputComponentState } from "../generic/input/index.js";
+import { ButtonComponentState } from "../generic/button/component.js";
+import { InputComponentState } from "../generic/input/component.js";
 
 //****** Boiler Plate Code to dynamically get names of object properties *******/
 interface ComponentFieldExpressionArgs extends HydrateFieldExpressionArgs<NewPostComponentState, NewPostComponent> {

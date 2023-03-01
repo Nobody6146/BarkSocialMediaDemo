@@ -3,7 +3,7 @@ import { HomeRouteState } from "../../routes/home/route.js";
 import { NewPostRoute } from "../../routes/new-post/route.js";
 import { ApiService } from "../../services/api/service.js";
 import { AuthService } from "../../services/auth/service.js";
-import { PostComponentState } from "../post/index.js";
+import { PostComponentState } from "../post/component.js";
 
 
 
